@@ -1,0 +1,12 @@
+[package]
+name = "toxiproxy"
+version = "0.1.0"
+authors = ["James Hall <james.hall@shopify.com>"]
+
+[dependencies]
+rustc-serialize = "*"
+
+[dependencies.hyper]
+version = "*"
+default-features = false
+features = ["security-framework"]
