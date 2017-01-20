@@ -11,12 +11,7 @@ fn no_proxies() {
 #[test]
 fn proxy_lifecycle() {
     let client = new_client();
-    let proxy = Proxy {
-        name: "lifecycle".to_string(),
-        listen: "127.0.0.1:13306".to_string(),
-        upstream: "127.0.0.1:3306".to_string(),
-        enabled: true,
-    };
+    let proxy = test_proxy();
 
     // Create.
     client.create_proxy(&proxy).unwrap();
@@ -41,12 +36,7 @@ fn proxy_lifecycle() {
 #[test]
 fn unknown_proxy() {
     let client = new_client();
-    let proxy = Proxy {
-        name: "lifecycle".to_string(),
-        listen: "127.0.0.1:13306".to_string(),
-        upstream: "127.0.0.1:3306".to_string(),
-        enabled: true,
-    };
+    let proxy = test_proxy();
 
     assert!(client.update_proxy(&proxy).is_err());
     assert!(client.delete_proxy(&proxy.name).is_err());
@@ -55,12 +45,7 @@ fn unknown_proxy() {
 #[test]
 fn no_toxics() {
     let client = new_client();
-    let proxy = Proxy {
-        name: "lifecycle".to_string(),
-        listen: "127.0.0.1:13306".to_string(),
-        upstream: "127.0.0.1:3306".to_string(),
-        enabled: true,
-    };
+    let proxy = test_proxy();
 
     client.create_proxy(&proxy).unwrap();
     let toxics = client.toxics(&proxy.name).unwrap();
@@ -76,4 +61,13 @@ fn new_client() -> Client {
     }
 
     client
+}
+
+fn test_proxy() -> Proxy {
+    Proxy {
+        name: "testproxy".to_string(),
+        listen: "127.0.0.1:13306".to_string(),
+        upstream: "127.0.0.1:3306".to_string(),
+        enabled: true,
+    }
 }
