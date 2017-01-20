@@ -1,18 +1,17 @@
 use std::io;
+use std::error::Error as StdError;
 use {hyper, serde_json};
 
 #[derive(Debug)]
 pub enum Error {
-    HttpError(hyper::error::Error),
     IoError(io::Error),
-    DecodeError(serde_json::Error),
     ServerError(String),
     NotFound,
 }
 
 impl From<hyper::error::Error> for Error {
     fn from(e: hyper::error::Error) -> Self {
-        Error::HttpError(e)
+        Error::ServerError(e.description().to_string())
     }
 }
 
@@ -24,6 +23,6 @@ impl From<io::Error> for Error {
 
 impl From<serde_json::Error> for Error {
     fn from(e: serde_json::Error) -> Self {
-        Error::DecodeError(e)
+        Error::ServerError(e.description().to_string())
     }
 }
