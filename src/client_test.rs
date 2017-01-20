@@ -52,6 +52,21 @@ fn unknown_proxy() {
     assert!(client.delete_proxy(&proxy.name).is_err());
 }
 
+#[test]
+fn no_toxics() {
+    let client = new_client();
+    let proxy = Proxy {
+        name: "lifecycle".to_string(),
+        listen: "127.0.0.1:13306".to_string(),
+        upstream: "127.0.0.1:3306".to_string(),
+        enabled: true,
+    };
+
+    client.create_proxy(&proxy).unwrap();
+    let toxics = client.toxics(&proxy.name).unwrap();
+    assert_eq!(0, toxics.len());
+}
+
 fn new_client() -> Client {
     let client = Client::new("localhost:8474");
     let proxies = client.proxies().unwrap();

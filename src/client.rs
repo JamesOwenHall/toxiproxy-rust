@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::io::Read;
 use {hyper, serde_json};
-use {Error, Proxy};
+use {Error, Proxy, Toxic};
 use hyper::status::StatusCode;
 
 #[derive(Debug)]
@@ -52,9 +52,9 @@ impl Client {
         }
     }
 
-    pub fn delete_proxy(&self, name: &str) -> Result<(), Error> {
+    pub fn delete_proxy(&self, proxy: &str) -> Result<(), Error> {
         let mut url = self.full_url("/proxies/");
-        url.push_str(name);
+        url.push_str(proxy);
 
         let resp = self.client
             .delete(&url)
@@ -80,6 +80,21 @@ impl Client {
             StatusCode::Ok => Ok(()),
             code => Err(Self::code_error(code)),
         }
+    }
+
+    pub fn toxics(&self, proxy: &str) -> Result<Vec<Toxic>, Error> {
+        let path = format!("/proxies/{}/toxics", proxy);
+        let mut resp = self.client.get(&self.full_url(&path)).send()?;
+        match resp.status {
+            StatusCode::Ok => {},
+            code => return Err(Self::code_error(code)),
+        }
+
+        let mut body = String::new();
+        resp.read_to_string(&mut body)?;
+
+        let toxics: Vec<Toxic> = serde_json::from_str(&body)?;
+        Ok(toxics)
     }
 
     fn full_url(&self, path: &str) -> String {
