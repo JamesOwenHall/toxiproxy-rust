@@ -1,12 +1,11 @@
 use std::io;
-use hyper;
-use rustc_serialize::json;
+use {hyper, serde_json};
 
 #[derive(Debug)]
 pub enum Error {
     HttpError(hyper::error::Error),
     IoError(io::Error),
-    DecoderError(json::DecoderError),
+    DecodeError(serde_json::Error),
     ServerError(String),
     NotFound,
 }
@@ -23,8 +22,8 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<json::DecoderError> for Error {
-    fn from(e: json::DecoderError) -> Self {
-        Error::DecoderError(e)
+impl From<serde_json::Error> for Error {
+    fn from(e: serde_json::Error) -> Self {
+        Error::DecodeError(e)
     }
 }

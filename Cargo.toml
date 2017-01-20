@@ -4,9 +4,7 @@ version = "0.1.0"
 authors = ["James Hall <james.hall@shopify.com>"]
 
 [dependencies]
-rustc-serialize = "*"
-
-[dependencies.hyper]
-version = "*"
-default-features = false
-features = ["security-framework"]
+hyper = "0.10"
+serde = "0.8"
+serde_derive = "0.8"
+serde_json = "0.8"

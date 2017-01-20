@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::io::Read;
-use {Error, hyper, Proxy};
+use {hyper, serde_json};
+use {Error, Proxy};
 use hyper::status::StatusCode;
-use rustc_serialize::json;
 
 #[derive(Debug)]
 pub struct Client {
@@ -35,12 +35,12 @@ impl Client {
         let mut body = String::new();
         resp.read_to_string(&mut body)?;
 
-        let proxies: HashMap<String, Proxy> = json::decode(&body)?;
+        let proxies: HashMap<String, Proxy> = serde_json::from_str(&body)?;
         Ok(proxies)
     }
 
     pub fn create_proxy(&self, proxy: &Proxy) -> Result<(), Error> {
-        let encoded = json::encode(proxy).unwrap();
+        let encoded = serde_json::to_string(proxy).unwrap();
         let resp = self.client
             .post(&self.full_url("/proxies"))
             .body(&encoded)
@@ -70,7 +70,7 @@ impl Client {
         let mut url = self.full_url("/proxies/");
         url.push_str(&proxy.name);
 
-        let encoded = json::encode(proxy).unwrap();
+        let encoded = serde_json::to_string(proxy).unwrap();
         let resp = self.client
             .post(&url)
             .body(&encoded)
