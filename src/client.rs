@@ -53,8 +53,8 @@ impl Client {
     }
 
     pub fn delete_proxy(&self, proxy: &str) -> Result<(), Error> {
-        let mut url = self.full_url("/proxies/");
-        url.push_str(proxy);
+        let path = format!("/proxies/{}", proxy);
+        let url = self.full_url(&path);
 
         let resp = self.client
             .delete(&url)
@@ -67,8 +67,8 @@ impl Client {
     }
 
     pub fn update_proxy(&self, proxy: &Proxy) -> Result<(), Error> {
-        let mut url = self.full_url("/proxies/");
-        url.push_str(&proxy.name);
+        let path = format!("/proxies/{}", proxy.name);
+        let url = self.full_url(&path);
 
         let encoded = serde_json::to_string(proxy).unwrap();
         let resp = self.client
@@ -95,6 +95,52 @@ impl Client {
 
         let toxics: Vec<Toxic> = serde_json::from_str(&body)?;
         Ok(toxics)
+    }
+
+    pub fn create_toxic(&self, proxy: &str, toxic: &Toxic) -> Result<(), Error> {
+        let path = format!("/proxies/{}/toxics", proxy);
+        let url = self.full_url(&path);
+
+        let encoded = serde_json::to_string(toxic)?;
+        let resp = self.client
+            .post(&url)
+            .body(&encoded)
+            .send()?;
+
+        match resp.status {
+            StatusCode::Ok => Ok(()),
+            code => Err(Self::code_error(code)),
+        }
+    }
+
+    pub fn delete_toxic(&self, proxy: &str, toxic: &str) -> Result<(), Error> {
+        let path = format!("/proxies/{}/toxics/{}", proxy, &toxic);
+        let url = self.full_url(&path);
+
+        let resp = self.client
+            .delete(&url)
+            .send()?;
+
+        match resp.status {
+            StatusCode::NoContent => Ok(()),
+            code => Err(Self::code_error(code)),
+        }
+    }
+
+    pub fn update_toxic(&self, proxy: &str, toxic: &Toxic) -> Result<(), Error> {
+        let path = format!("/proxies/{}/toxics/{}", proxy, &toxic.name);
+        let url = self.full_url(&path);
+
+        let encoded = serde_json::to_string(toxic)?;
+        let resp = self.client
+            .post(&url)
+            .body(&encoded)
+            .send()?;
+
+        match resp.status {
+            StatusCode::Ok => Ok(()),
+            code => Err(Self::code_error(code)),
+        }
     }
 
     fn full_url(&self, path: &str) -> String {
