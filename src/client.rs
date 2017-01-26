@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::io::Read;
 use {hyper, serde_json};
 use {Error, Proxy, Toxic};
+use toxic::JsonToxic;
 use hyper::status::StatusCode;
 
 #[derive(Debug)]
@@ -93,7 +94,12 @@ impl Client {
         let mut body = String::new();
         resp.read_to_string(&mut body)?;
 
-        let toxics: Vec<Toxic> = serde_json::from_str(&body)?;
+        let json_toxics: Vec<JsonToxic> = serde_json::from_str(&body)?;
+        let mut toxics = Vec::with_capacity(json_toxics.len());
+        for json_toxic in json_toxics {
+            toxics.push(Toxic::from_json_toxic(&json_toxic)?);
+        }
+
         Ok(toxics)
     }
 
@@ -101,7 +107,7 @@ impl Client {
         let path = format!("/proxies/{}/toxics", proxy);
         let url = self.full_url(&path);
 
-        let encoded = serde_json::to_string(toxic)?;
+        let encoded = serde_json::to_string(&toxic.to_json_toxic())?;
         let resp = self.client
             .post(&url)
             .body(&encoded)
@@ -131,7 +137,7 @@ impl Client {
         let path = format!("/proxies/{}/toxics/{}", proxy, &toxic.name);
         let url = self.full_url(&path);
 
-        let encoded = serde_json::to_string(toxic)?;
+        let encoded = serde_json::to_string(&toxic.to_json_toxic())?;
         let resp = self.client
             .post(&url)
             .body(&encoded)

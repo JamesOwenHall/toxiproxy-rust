@@ -70,7 +70,6 @@ fn toxic_lifecycle() {
     {
         let toxic = &mut exp[0];
         toxic.toxicity = 0.5;
-        toxic.attributes.jitter = 3;
         client.update_toxic(&proxy.name, toxic).unwrap();
     }
     assert_eq!(exp, client.toxics(&proxy.name).unwrap());
@@ -103,18 +102,11 @@ fn test_proxy() -> Proxy {
 fn test_toxic() -> Toxic {
     Toxic {
         name: "testtoxic".to_string(),
-        typ: ToxicType::Latency,
         stream: Stream::Downstream,
         toxicity: 1.0,
-        attributes: Attributes {
+        typ: ToxicType::Latency {
             latency: 100,
             jitter: 0,
-            rate: 0,
-            delay: 0,
-            timeout: 0,
-            average_size: 0,
-            size_variation: 0,
-            bytes: 0,
         },
     }
 }
