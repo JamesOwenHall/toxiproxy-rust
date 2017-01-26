@@ -9,28 +9,6 @@ pub struct Toxic {
     pub typ: ToxicType,
 }
 
-impl Toxic {
-    pub fn to_json_toxic(&self) -> JsonToxic {
-        JsonToxic {
-            name: self.name.clone(),
-            typ: self.typ.name(),
-            stream: self.stream.clone(),
-            toxicity: self.toxicity,
-            attributes: self.typ.attributes(),
-        }
-    }
-
-    pub fn from_json_toxic(json: &JsonToxic) -> Result<Self, Error> {
-        let typ = ToxicType::from(&json.typ, &json.attributes)?;
-        Ok(Toxic {
-            name: json.name.clone(),
-            stream: json.stream.clone(),
-            toxicity: json.toxicity,
-            typ: typ,
-        })
-    }
-}
-
 #[derive(Clone,Debug,PartialEq)]
 pub enum ToxicType {
     Latency{latency: i64, jitter: i64},
@@ -122,6 +100,28 @@ pub struct JsonToxic {
     stream: Stream,
     toxicity: f64,
     attributes: HashMap<String, i64>,
+}
+
+impl JsonToxic {
+    pub fn from_toxic(toxic: &Toxic) -> Self {
+        JsonToxic {
+            name: toxic.name.clone(),
+            typ: toxic.typ.name(),
+            stream: toxic.stream.clone(),
+            toxicity: toxic.toxicity,
+            attributes: toxic.typ.attributes(),
+        }
+    }
+
+    pub fn to_toxic(&self) -> Result<Toxic, Error> {
+        let typ = ToxicType::from(&self.typ, &self.attributes)?;
+        Ok(Toxic {
+            name: self.name.clone(),
+            stream: self.stream.clone(),
+            toxicity: self.toxicity,
+            typ: typ,
+        })
+    }
 }
 
 #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]

@@ -97,7 +97,7 @@ impl Client {
         let json_toxics: Vec<JsonToxic> = serde_json::from_str(&body)?;
         let mut toxics = Vec::with_capacity(json_toxics.len());
         for json_toxic in json_toxics {
-            toxics.push(Toxic::from_json_toxic(&json_toxic)?);
+            toxics.push(json_toxic.to_toxic()?);
         }
 
         Ok(toxics)
@@ -107,7 +107,7 @@ impl Client {
         let path = format!("/proxies/{}/toxics", proxy);
         let url = self.full_url(&path);
 
-        let encoded = serde_json::to_string(&toxic.to_json_toxic())?;
+        let encoded = serde_json::to_string(&JsonToxic::from_toxic(toxic))?;
         let resp = self.client
             .post(&url)
             .body(&encoded)
@@ -137,7 +137,7 @@ impl Client {
         let path = format!("/proxies/{}/toxics/{}", proxy, &toxic.name);
         let url = self.full_url(&path);
 
-        let encoded = serde_json::to_string(&toxic.to_json_toxic())?;
+        let encoded = serde_json::to_string(&JsonToxic::from_toxic(toxic))?;
         let resp = self.client
             .post(&url)
             .body(&encoded)
