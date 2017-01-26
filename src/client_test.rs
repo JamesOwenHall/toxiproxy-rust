@@ -1,5 +1,4 @@
 use super::*;
-use std::collections::HashMap;
 
 #[test]
 fn no_proxies() {
@@ -9,28 +8,40 @@ fn no_proxies() {
 }
 
 #[test]
-fn proxy_lifecycle() {
+fn create_proxy() {
     let client = new_client();
     let proxy = test_proxy();
-
-    // Create.
     client.create_proxy(&proxy).unwrap();
-    let mut exp = HashMap::new();
-    exp.insert(proxy.name.to_string(), proxy.clone());
-    assert_eq!(exp, client.proxies().unwrap());
 
-    // Update.
-    {
-        let proxy = exp.get_mut(&proxy.name).unwrap();
-        proxy.listen = "127.0.0.1:13307".to_string();
-        proxy.upstream = "127.0.0.1:3307".to_string();
-        client.update_proxy(proxy).unwrap();
-    }
-    assert_eq!(exp, client.proxies().unwrap());
+    let proxies = client.proxies().unwrap();
+    assert_eq!(1, proxies.len());
+    assert_eq!(Some(&proxy), proxies.get(&proxy.name));
+}
 
-    // Delete.
+#[test]
+fn update_proxy() {
+    let client = new_client();
+    let mut proxy = test_proxy();
+    client.create_proxy(&proxy).unwrap();
+
+    proxy.enabled = false;
+    proxy.upstream = "example.org:80".to_string();
+    client.update_proxy(&proxy).unwrap();
+
+    let proxies = client.proxies().unwrap();
+    assert_eq!(1, proxies.len());
+    assert_eq!(Some(&proxy), proxies.get(&proxy.name));
+}
+
+#[test]
+fn delete_proxy() {
+    let client = new_client();
+    let proxy = test_proxy();
+    client.create_proxy(&proxy).unwrap();
     client.delete_proxy(&proxy.name).unwrap();
-    assert_eq!(0, client.proxies().unwrap().len());
+    
+    let proxies = client.proxies().unwrap();
+    assert_eq!(0, proxies.len());
 }
 
 #[test]
@@ -40,6 +51,14 @@ fn unknown_proxy() {
 
     assert!(client.update_proxy(&proxy).is_err());
     assert!(client.delete_proxy(&proxy.name).is_err());
+}
+
+#[test]
+fn duplicate_proxy() {
+    let client = new_client();
+    let proxy = test_proxy();
+    client.create_proxy(&proxy).unwrap();
+    assert!(client.create_proxy(&proxy).is_err());
 }
 
 #[test]
@@ -53,30 +72,70 @@ fn no_toxics() {
 }
 
 #[test]
-fn toxic_lifecycle() {
+fn create_toxic() {
     let client = new_client();
     let proxy = test_proxy();
-    let toxic = test_toxic();
-
-    // Create.
     client.create_proxy(&proxy).unwrap();
-    assert_eq!(1, client.proxies().unwrap().len());
 
+    let toxic = test_toxic();
     client.create_toxic(&proxy.name, &toxic).unwrap();
-    let mut exp = vec![toxic];
-    assert_eq!(exp, client.toxics(&proxy.name).unwrap());
+    
+    let toxics = client.toxics(&proxy.name).unwrap();
+    assert_eq!(1, toxics.len());
+    assert_eq!(toxic, toxics[0]);
+}
 
-    // Update.
-    {
-        let toxic = &mut exp[0];
-        toxic.toxicity = 0.5;
-        client.update_toxic(&proxy.name, toxic).unwrap();
-    }
-    assert_eq!(exp, client.toxics(&proxy.name).unwrap());
+#[test]
+fn update_toxic() {
+    let client = new_client();
+    let proxy = test_proxy();
+    client.create_proxy(&proxy).unwrap();
 
-    // Delete.
-    client.delete_toxic(&proxy.name, &exp[0].name).unwrap();
-    assert_eq!(0, client.toxics(&proxy.name).unwrap().len());
+    let mut toxic = test_toxic();
+    client.create_toxic(&proxy.name, &toxic).unwrap();
+
+    toxic.toxicity = 0.5;
+    client.update_toxic(&proxy.name, &toxic).unwrap();
+
+    let toxics = client.toxics(&proxy.name).unwrap();
+    assert_eq!(1, toxics.len());
+    assert_eq!(toxic, toxics[0]);
+}
+
+#[test]
+fn delete_toxic() {
+    let client = new_client();
+    let proxy = test_proxy();
+    client.create_proxy(&proxy).unwrap();
+
+    let toxic = test_toxic();
+    client.create_toxic(&proxy.name, &toxic).unwrap();
+    client.delete_toxic(&proxy.name, &toxic.name).unwrap();
+    
+    let toxics = client.toxics(&proxy.name).unwrap();
+    assert_eq!(0, toxics.len());
+}
+
+#[test]
+fn unknown_toxic() {
+    let client = new_client();
+    let proxy = test_proxy();
+    client.create_proxy(&proxy).unwrap();
+
+    let toxic = test_toxic();
+    assert!(client.update_toxic(&proxy.name, &toxic).is_err());
+    assert!(client.delete_toxic(&proxy.name, &toxic.name).is_err());
+}
+
+#[test]
+fn duplicate_toxic() {
+    let client = new_client();
+    let proxy = test_proxy();
+    client.create_proxy(&proxy).unwrap();
+
+    let toxic = test_toxic();
+    client.create_toxic(&proxy.name, &toxic).unwrap();
+    assert!(client.create_toxic(&proxy.name, &toxic).is_err());
 }
 
 fn new_client() -> Client {
