@@ -9,6 +9,14 @@ pub struct Toxic {
     pub typ: ToxicType,
 }
 
+#[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+pub enum Stream {
+    #[serde(rename="downstream")]
+    Downstream,
+    #[serde(rename="upstream")]
+    Upstream,
+}
+
 #[derive(Clone,Debug,PartialEq)]
 pub enum ToxicType {
     Latency{latency: i64, jitter: i64},
@@ -122,32 +130,4 @@ impl JsonToxic {
             typ: typ,
         })
     }
-}
-
-#[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-pub enum Stream {
-    #[serde(rename="downstream")]
-    Downstream,
-    #[serde(rename="upstream")]
-    Upstream,
-}
-
-#[derive(Clone,Debug,Default,PartialEq,Serialize,Deserialize)]
-pub struct Attributes {
-    #[serde(default)]
-    pub latency: i64,
-    #[serde(default)]
-    pub jitter: i64,
-    #[serde(default)]
-    pub rate: i64,
-    #[serde(default)]
-    pub delay: i64,
-    #[serde(default)]
-    pub timeout: i64,
-    #[serde(default)]
-    pub average_size: i64,
-    #[serde(default)]
-    pub size_variation: i64,
-    #[serde(default)]
-    pub bytes: i64,
 }

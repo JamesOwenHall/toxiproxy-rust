@@ -12,7 +12,7 @@ mod toxic;
 pub use client::Client;
 pub use error::Error;
 pub use proxy::Proxy;
-pub use toxic::{Toxic, ToxicType, Stream, Attributes};
+pub use toxic::{Toxic, ToxicType, Stream};
 
 #[cfg(test)]
 mod client_test;
