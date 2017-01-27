@@ -1,0 +1,12 @@
+language: rust
+rust:
+  - nightly
+
+install:
+  - wget -O toxiproxy-2.1.0.deb https://github.com/Shopify/toxiproxy/releases/download/v2.1.0/toxiproxy_2.1.0_amd64.deb
+  - sudo dpkg -i toxiproxy-2.1.0.deb
+  - sudo service toxiproxy start
+
+script:
+  - cargo build --verbose
+  - RUST_TEST_THREADS=1 cargo test --verbose
